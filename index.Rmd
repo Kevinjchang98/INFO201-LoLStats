@@ -1,0 +1,79 @@
+---
+title: "Midpoint Deliverable"
+output: html_document
+---
+
+```{r setup, include=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Hard code account name and region for .Rmd; probably have user input or something for actual interactive version
+name <- "BoxBox"
+region <- "na1"
+
+library(plyr)
+library(dplyr)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+library(knitr)
+library(scales)
+library(gridExtra)
+library(anytime)
+```
+
+# Introduction
+This project will perform analysis on League of Legends data. It will provide an in-depth analysis of a particular player's recent statistics based upon their most recent 100 games, as well as provide more meta-level analysis comparing trends of the player base as a whole over a larger period of time. Any such insights obtained here can very easily be recreated for any player given the flexibility of the API.
+
+# Data
+For this midpoint deliverable report, `r name`'s player data is chosen to be analyzed. This is because it appears he hasn't played recently, so data shouldn't be changing much from the time this report is written to when it's graded assuming he doesn't suddenly start playing, and he's a relatively high-level player which theoretically reduces the impact luck may have on the game outcomes, and increases dependence of quantifiable in-game factors to match outcomes leading to more accurate analysis.
+
+## Summary of Available Data
+```{r generate_summary, include = FALSE, message=FALSE, cache=FALSE}
+source("./scripts/get.R")
+source(file = "./scripts/summary.R")
+summary(name, region)
+```
+
+`r info_account_name` is currently ranked `r info_rank` with `r info_lp` LP. In the last 100 games, their winrate has been `r info_winrate`. Their most played champion is `r info_most_played_champion`.
+
+#### Per-Champion Player Statistics for `r info_account_name`
+```{r tables, echo = FALSE, cache=FALSE}
+source(file = "./scripts/summaryTable.R")
+
+kable(format_summary_table(champion_summary))
+```
+
+A summary of their per-character stats split into games won and lost can be seen in the above table. Statistics were split into each champion played, and further into whether those games played were won or lost, as averaging together statistics for vastly different roles would be unreasonable, and splitting games by whether they were won or lost allows for the comparison of which factors appear to vary between won and lost games.
+
+# Preliminary Charts
+
+## Frequently Played Champions
+```{r champion_graph, echo=FALSE, cache=FALSE}
+source(file = "./scripts/graphChampion.R")
+# TODO: investigate this not working when knitting but working fine in all other cases
+graph_champion_freq(champion_summary)
+```
+
+This chart provides a quick overview of which champions the player has played in their last 100 games, as well as easy comparison of winrates between champions. This sort of data can provide useful insight into which champions might be more effective for a particular player, as well as insight into whether a player prefers to play a small number of champions, or a larger number of champions. The error bars are the standard deviation for the stats.
+
+For example in analyzing BoxBox's chart, one can see that he has played Riven and Fiora significantly more consistently than the others, and has a significantly positive winrate with those champions. One can also see that with champions played less often, the winrate appears to be more volatile, which makes intuitive sense when taking into account low sample size to calculate winrate, and being less practiced on those champions.
+
+## Comparison of Won vs. Lost Games
+```{r win_graph, echo=FALSE, cache=FALSE}
+source(file = "./scripts/graphWinrate.R")
+graph_winrate(win_summary)
+```
+
+These charts provide a comparison of average player stats in the games `r info_account_name` has won and lost. One may gain insight into possible avenues of improvement from these stats. For example, if one's CS is varying a lot between the games they lost and won in but their KDA is not, that may suggest that an effective way to improve one's chances of improving would be to focus on CS rather than improving their KDA. These stats are highly contextual, however, and should only provide an overview to how differently a player's stats are in the games they won compared to those that they lost. The error bars are the standard deviation for the stats.
+
+In `r info_account_name`'s case in particular, some example insights may be gained from these graphs. The CS difference between games won and lost are relatively minimal whereas KDA has quite a large variance, which may suggest that `r info_account_name` isn't missing a lot of CS while in lane as a lower-ranked player might, and thus causing them to lose games. Instead, there appear to be relatively similar amount of CS, suggesting that other factors, such as early kills or deaths snowballing to more kills or deaths, may be more important in deciding whether `r info_account_name`'s game will end up in a win or loss for them.
+
+## Games Played vs. Time Started
+```{r time_graph, echo=FALSE, cache=FALSE}
+source(file = "./scripts/graphTime.R")
+graph_time(time_summary)
+```
+
+This chart provides an overview of the time of day a player plays their most recent games, as well as the outcome of the games. This might be useful in seeing if a particular time of day is particularly favorable or unfavorable for a player.
+
+For `r info_account_name` in particular, it appears he plays games strictly from noon til about midnight. Furthermore, it appears that games played towards the middle of the commonly played times have a lower winrate, whereas those games played towards the start seem to have the best winrate. That may be due to a low sample size, however, or those particular days having some other factor that affected his winrate. Further analysis by also looking at the days these games were played may be interesting, and perhaps looking at a graph of games vs. time per session might be more relevant to highlighting any trends compared to all 100 recent games plotted together.

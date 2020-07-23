@@ -1,0 +1,33 @@
+library(shiny)
+library(plyr)
+library(dplyr)
+library(httr)
+library(jsonlite)
+library(ggplot2)
+library(plotly)
+library(knitr)
+library(scales)
+library(gridExtra)
+library(anytime)
+library(DT)
+library(broom)
+library(shinymaterial) # Styling
+
+source("./scripts/get.R")
+# Get initial data so app_ui can fill filter dropdown in table tab
+source("app_initialData.R")
+
+source("./scripts/apikey.R")
+source("app_server.R")
+source("app_ui.R")
+source("./scripts/apikey.R")
+source("./scripts/graphChampion.R")
+source("./scripts/graphTime.R")
+source("./scripts/graphWinratePie.R")
+source("./scripts/graphKDAPie.R")
+source("./scripts/graphRolePie.R")
+source("./scripts/graphWinrate.R")
+source("./scripts/graphTimeStats.R")
+source("./scripts/summaryTable.R")
+
+shinyApp(ui = ui, server = server)
